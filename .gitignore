@@ -1,4 +1,6 @@
 *.o
+*.s
+libLWP.a
 
 snakes
 hungry
