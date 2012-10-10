@@ -4,7 +4,7 @@ CFLAGS  = -Wall -g -I ../include
 
 LD 	= gcc
 
-LDFLAGS  = -Wall -g -fpic
+LDFLAGS  = -Wall -g
 
 PUBFILES =  README  hungrymain.c  libPLN.a  libsnakes.a  lwp.h\
 	    numbersmain.c  snakemain.c  snakes.h
@@ -23,7 +23,6 @@ OBJS	= $(SNAKEOBJS) $(HUNGRYOBJS) $(NUMOBJS)
 
 SRCS	= snakemain.c numbersmain.c
 
-HDRS	= 
 
 EXTRACLEAN = core $(PROGS)
 
@@ -33,7 +32,7 @@ allclean: clean
 	@rm -f $(EXTRACLEAN)
 
 clean:	
-	rm -f $(OBJS) *~ TAGS
+	rm -f  *.o $(OBJS) *~ TAGS nums hungry snakes
 
 snakes: snakemain.o libPLN.a libsnakes.a
 	$(LD) $(LDFLAGS) -o snakes snakemain.o -L. -lncurses -lsnakes -lPLN
@@ -51,7 +50,7 @@ snakemain.o: lwp.h snakes.h
 numbermain.o: lwp.h
 
 libLWP.a: lwp.o
-	ar r libLWP.a lwp.o
+	ar rcs libLWP.a lwp.o
 
 lwp.o: lwp.c
 	$(LD) $(LDFLAGS) -c lwp.c

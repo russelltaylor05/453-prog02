@@ -22,7 +22,6 @@ extern lwp_context lwp_ptable[];  /* the process table           */
 extern int lwp_procs;             /* the current number of LWPs  */
 extern int lwp_running;           /* the index of the currently running LWP */
 
-
 typedef void (*lwpfun)(void *); /* type for lwp function */
 typedef int  (*schedfun)(void); /* type for scheduler function */
 

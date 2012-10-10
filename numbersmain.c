@@ -45,7 +45,7 @@ int main(int argc, char *argv[]){
 
 
   GetSP(i);
-  printf("Stack pointer: %d\n",i);
+
   SAVE_STATE();
   
   for (i=1; i<argc; i++) {                /* check options */
@@ -62,8 +62,9 @@ int main(int argc, char *argv[]){
   /* spawn a number of individual LWPs */
   for(i=1;i<=5;i++) {
     new_lwp((lwpfun)indentnum,(void*)i,INITIALSTACK);
-  }
-
+  }  
+  //print_table();
+  
   lwp_start();                     /* returns when the last lwp exits */
 
   printf("Back from LWPS.\n");

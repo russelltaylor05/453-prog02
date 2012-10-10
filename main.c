@@ -10,6 +10,18 @@
 
 
 int main(){
+  int i;
+  int arr[150];
+  
+  int *ptr = malloc(4);
+  
+  ptr = ptr + 13;
+  
+  *ptr = 10;
+  ptr++;
+  free(ptr);
+  
+  
+  return 1;
 
-  return 1;  
 }
