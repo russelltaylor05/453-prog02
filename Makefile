@@ -34,11 +34,11 @@ allclean: clean
 clean:	
 	rm -f  *.o $(OBJS) *~ TAGS nums hungry snakes
 
-snakes: snakemain.o libPLN.a libsnakes.a
-	$(LD) $(LDFLAGS) -o snakes snakemain.o -L. -lncurses -lsnakes -lPLN
+snakes: snakemain.o libPLN.a libsnakes.a libLWP.a  
+	$(LD) $(LDFLAGS) -o snakes snakemain.o -L. -lncurses -lsnakes -lLWP -lPLN 
 
-hungry: hungrymain.o libPLN.a libsnakes.a
-	$(LD) $(LDFLAGS) -o hungry hungrymain.o -L. -lncurses -lsnakes -lPLN
+hungry: hungrymain.o libPLN.a libsnakes.a libLWP.a
+	$(LD) $(LDFLAGS) -o hungry hungrymain.o -L. -lncurses -lsnakes -lLWP -lPLN 
 
 nums: numbersmain.o libPLN.a libLWP.a
 	$(LD) $(LDFLAGS) -o nums numbersmain.o -L. -lLWP -lPLN 

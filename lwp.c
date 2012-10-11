@@ -15,12 +15,9 @@ void print_table();
  */
 void lwp_yield()
 {
-  unsigned long *sp;  
 
   SAVE_STATE();
-  GetSP(sp);
-  lwp_ptable[lwp_running].sp = sp;   /* GetSP(lwp_ptable[lwp_running].sp) */
-
+  GetSP(lwp_ptable[lwp_running].sp);
   
   /* choose next process (round robin) */
   if(lwp_running+1 == lwp_procs) {
@@ -28,9 +25,8 @@ void lwp_yield()
   } else {
     lwp_running = lwp_running+1;
   }
-  sp = lwp_ptable[lwp_running].sp;
   
-  SetSP(sp);
+  SetSP(lwp_ptable[lwp_running].sp);
   RESTORE_STATE();
   
   
@@ -46,14 +42,7 @@ int new_lwp(lwpfun funct, void *ptr, size_t size)
   lwp_ptable[lwp_procs].stack = malloc(size*4);
   lwp_ptable[lwp_procs].stacksize = size;
   lwp_ptable[lwp_procs].sp = lwp_ptable[lwp_procs].stack + size;
-  
-  printf("size:\t%d\n", (int)sizeof(int));
-  printf("sp:\t%d\n", (int)lwp_ptable[lwp_procs].sp);
-  printf("stack:\t%d\n",(int)lwp_ptable[lwp_procs].stack);
-  
-  /* move stack pointer to high memory */
-  /* decrement sp to get to next address */
-  
+    
   /* add params to stack*/
   lwp_ptable[lwp_procs].sp--;
   *(lwp_ptable[lwp_procs].sp) = (unsigned long)ptr;
@@ -75,7 +64,7 @@ int new_lwp(lwpfun funct, void *ptr, size_t size)
   lwp_ptable[lwp_procs].sp = lwp_ptable[lwp_procs].sp - 7;
   
   /* set EBP for register restory */
-  *(lwp_ptable[lwp_procs].sp) = sp;
+  *(lwp_ptable[lwp_procs].sp) = (unsigned long)sp;
     
   lwp_procs++;  
   
