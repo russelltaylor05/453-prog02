@@ -153,22 +153,23 @@ void lwp_exit()
   unsigned long *sp;
 
   /* Should get onto a new stack before destroying the current one */
-  SAVE_STATE();
   
   free(lwp_ptable[lwp_running].stack);  
   lwp_procs--;
   
+
   if(lwp_procs == 0) {
     lwp_stop();
+    return;
   }
   
   /* Move processes in table down */
   for (i = lwp_running; i < lwp_procs; i++) {
     lwp_ptable[i] = lwp_ptable[i+1];
   }
-  
+
   /* Choose new process */
-  sp = lwp_ptable[0].sp;
+  sp = lwp_ptable[lwp_running].sp;
   SetSP(sp);
   RESTORE_STATE(); /* make last statement */
 
