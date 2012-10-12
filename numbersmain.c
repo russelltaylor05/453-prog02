@@ -43,13 +43,8 @@ int AlwaysZero() {
 int main(int argc, char *argv[]){
   int i;
 
-
-  GetSP(i);
-
-  SAVE_STATE();
-  
-  for (i=1; i<argc; i++) {                /* check options */
-    if (!strcmp(argv[i],"-z") ) { /* -z = schedule element 0 */
+  for (i=1;i<argc;i++) {                /* check options */
+    if ( !strcmp(argv[i],"-z") ){ /* -z = schedule element 0 */
       lwp_set_scheduler(AlwaysZero);
     } else {
       fprintf(stderr,"%s: unknown option\n",argv[i]);
@@ -62,9 +57,8 @@ int main(int argc, char *argv[]){
   /* spawn a number of individual LWPs */
   for(i=1;i<=5;i++) {
     new_lwp((lwpfun)indentnum,(void*)i,INITIALSTACK);
-  }  
-  //print_table();
-  
+  }
+
   lwp_start();                     /* returns when the last lwp exits */
 
   printf("Back from LWPS.\n");
@@ -76,8 +70,6 @@ static void indentnum(void *num) {
    * Not terribly interesting, but it is instructive.
    */
   int howfar,i;
-
-  //printf("procs: %d\t running: %d\t table: %d\t\n", lwp_procs, lwp_running, lwp_ptable[1].sp);
 
   howfar=(int)num;              /* interpret num as an integer */
   for(i=0;i<howfar;i++){

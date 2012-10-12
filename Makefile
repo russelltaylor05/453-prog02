@@ -41,7 +41,7 @@ hungry: hungrymain.o libPLN.a libsnakes.a libLWP.a
 	$(LD) $(LDFLAGS) -o hungry hungrymain.o -L. -lncurses -lsnakes -lLWP -lPLN 
 
 nums: numbersmain.o libPLN.a libLWP.a
-	$(LD) $(LDFLAGS) -o nums numbersmain.o -L. -lLWP -lPLN 
+	$(LD) $(LDFLAGS) -o nums numbersmain.o -L. -lLWP -lPLN
 
 hungrymain.o: lwp.h snakes.h
 

@@ -10,9 +10,31 @@ void print_table();
 
 /* global variable to define lwp_table[PROC_LIMIT]) */
 
+/* main stack pointer to return to after lwp_stop() */
+unsigned long *initial; 
+
 /*
- * Yield control to another LWP
+ * Start the LWP threads
  */
+void lwp_start()
+{  
+  SAVE_STATE();
+  GetSP(initial);
+  SetSP(lwp_ptable[0].sp);
+  lwp_running = 0;
+  RESTORE_STATE();
+}
+
+void lwp_stop()
+{  
+  SAVE_STATE();
+  GetSP(lwp_ptable[lwp_running].sp);
+
+  SetSP(initial);
+  RESTORE_STATE();
+}
+    
+
 void lwp_yield()
 {
 
@@ -27,16 +49,15 @@ void lwp_yield()
   }
   
   SetSP(lwp_ptable[lwp_running].sp);
-  RESTORE_STATE();
-  
-  
+  RESTORE_STATE();  
 }
 
 
-/* Not workigng */
 int new_lwp(lwpfun funct, void *ptr, size_t size)
 {
   unsigned long *sp;
+  int i;
+  i = 0;
 
   lwp_ptable[lwp_procs].pid = lwp_procs+1;
   lwp_ptable[lwp_procs].stack = malloc(size*4);
@@ -50,6 +71,8 @@ int new_lwp(lwpfun funct, void *ptr, size_t size)
   /* add return value to stack */
   lwp_ptable[lwp_procs].sp--;
   *(lwp_ptable[lwp_procs].sp) = (unsigned long)lwp_exit;
+
+  //printf("Exit: %d",(int)*(lwp_ptable[lwp_procs].sp));
       
   /* pointer to func */  
   lwp_ptable[lwp_procs].sp--;
@@ -65,18 +88,28 @@ int new_lwp(lwpfun funct, void *ptr, size_t size)
   
   /* set EBP for register restory */
   *(lwp_ptable[lwp_procs].sp) = (unsigned long)sp;
-    
-  lwp_procs++;  
-  
-  //return lwp_ptable[lwp_procs-1].pid;
-  return 1;
+
+  /* print stack */
+  /*
+  printf("stack top:\t %d\n", (int)(lwp_ptable[lwp_procs].stack + size));  
+  printf("current:\t %d\n", (int)(lwp_ptable[lwp_procs].sp));  
+  for(i = 0; i < 11; i++) {
+    printf("Address: %d\t Value: %d \n", (int)(lwp_ptable[lwp_procs].sp + i), (int)*(lwp_ptable[lwp_procs].sp + i));
+  }  
+  printf("\n");
+  */
+
+
+  lwp_procs++;
+
+  return lwp_ptable[lwp_procs-1].pid;
 
 }
 
 /*
  * Terminate current LWP
  */
-void lwp_exit2() 
+void lwp_exit()
 {
   int i;  
   unsigned long *sp;
