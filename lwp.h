@@ -27,7 +27,7 @@ typedef int  (*schedfun)(void); /* type for scheduler function */
 /* lwp functions */
 extern int  new_lwp(lwpfun, void *, size_t);
 extern void lwp_exit();
-extern int  lwp_getpid();
+extern unsigned long  lwp_getpid();
 extern void lwp_yield();
 extern void lwp_start();
 extern void lwp_stop();

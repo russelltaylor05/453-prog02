@@ -175,6 +175,7 @@ void lwp_exit()
  * Causes the LWP package to use the function scheduler to choose
  * the next process to run.
  */
+/*
 void lwp_set_scheduler(schedfun sched) 
 {
   if(sched) {
@@ -183,7 +184,7 @@ void lwp_set_scheduler(schedfun sched)
     scheduler = roundrobin;
   }
   
-}
+}*/
 
 /*
 int roundrobin()
