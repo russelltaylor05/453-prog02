@@ -7,7 +7,6 @@ typedef struct context_st {
   unsigned long *stack;         /* pointer to stack returned by malloc() */
   unsigned long stacksize;      /* Size of allocated stack */
   unsigned long *sp;            /* current stack pointer   */
-  /*  .... other things if necessary ... */
 } lwp_context;
 
 

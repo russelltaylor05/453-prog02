@@ -7,11 +7,15 @@
 #include "lwp.h"
 
 void print_table();
+int roundrobin();
 
 /* global variable to define lwp_table[PROC_LIMIT]) */
 
 /* main stack pointer to return to after lwp_stop() */
 unsigned long *initial; 
+
+/* scheduler function */
+schedfun scheduler;
 
 /*
  * Start the LWP threads
@@ -40,13 +44,8 @@ void lwp_yield()
 
   SAVE_STATE();
   GetSP(lwp_ptable[lwp_running].sp);
-  
-  /* choose next process (round robin) */
-  if(lwp_running+1 == lwp_procs) {
-    lwp_running = 0;
-  } else {
-    lwp_running = lwp_running+1;
-  }
+    
+  lwp_running = (lwp_running + 1) % lwp_procs;
   
   SetSP(lwp_ptable[lwp_running].sp);
   RESTORE_STATE();  
@@ -72,7 +71,6 @@ int new_lwp(lwpfun funct, void *ptr, size_t size)
   lwp_ptable[lwp_procs].sp--;
   *(lwp_ptable[lwp_procs].sp) = (unsigned long)lwp_exit;
 
-  //printf("Exit: %d",(int)*(lwp_ptable[lwp_procs].sp));
       
   /* pointer to func */  
   lwp_ptable[lwp_procs].sp--;
@@ -134,6 +132,23 @@ void lwp_exit()
   RESTORE_STATE(); /* make last statement */
 
 }
+
+/*
+void lwp_set_scheduler(schedfun sched) 
+{
+  if(sched) {
+    scheduler = sched;
+  } else {
+    scheduler = roundrobin;
+  }
+  
+}
+
+int roundrobin()
+{
+  return (lwp_running + 1) % lwp_procs;
+}
+*/
 
 /* 
  * Return PID of calling LWP
