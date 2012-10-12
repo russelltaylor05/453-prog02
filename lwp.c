@@ -1,3 +1,13 @@
+/* Russell Taylor
+ * Alex Spotnitz
+ *
+ * CPE 453
+ * Dr. Nico
+ *
+ * Assignment 2: Lightweight Processes
+ *
+ */
+
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -9,19 +19,28 @@
 void print_table();
 int roundrobin();
 
-/* global variable to define lwp_table[PROC_LIMIT]) */
+/* Global variable to define max number of active LWPs */
+lwp_context lwp_ptable[LWP_PROC_LIMIT];
 
-/* main stack pointer to return to after lwp_stop() */
+/* Main/original stack pointer to return to after lwp_stop() */
 unsigned long *initial; 
 
 /* scheduler function */
 schedfun scheduler;
 
 /*
- * Start the LWP threads
+ * Starts the LWP system.
+ *
+ * Saves the original context and stack pointer (for
+ * lwp_stop() to use later), picks a LWP and starts
+ * it running. If there are no LWPs, returns immediately.
  */
 void lwp_start()
-{  
+{
+  /* If there are no LWPs, return immediately. */
+  if(lwp_procs == 0){
+      return;
+  }
   SAVE_STATE();
   GetSP(initial);
   SetSP(lwp_ptable[0].sp);
@@ -29,16 +48,24 @@ void lwp_start()
   RESTORE_STATE();
 }
 
+/* Stops the LWP system.
+ *
+ * Restores the original stack pointer and returns to that
+ * context (wherever lwp_start() was called from).
+ */
 void lwp_stop()
 {  
   SAVE_STATE();
   GetSP(lwp_ptable[lwp_running].sp);
-
   SetSP(initial);
   RESTORE_STATE();
 }
     
-
+/* Yields control to another LWP (chosen by the scheduler).
+ *
+ * Saves the current LWP's context, picks the next one, restores
+ * that thread's context, and returns.
+ */
 void lwp_yield()
 {
 
@@ -58,8 +85,17 @@ int new_lwp(lwpfun funct, void *ptr, size_t size)
   int i;
   i = 0;
 
-  lwp_ptable[lwp_procs].pid = lwp_procs+1;
-  lwp_ptable[lwp_procs].stack = malloc(size*4);
+  printf("lwp_procs = %d\n", lwp_procs);
+
+  /* If more than LWP_PROC_LIMIT threads already exist,
+   * then do not create a new thread/LWP. */
+  if(lwp_procs > LWP_PROC_LIMIT){
+      return -1;
+  }
+
+  lwp_ptable[lwp_procs].pid = lwp_procs + 1;
+  /* size is number of words. 1 words = 4 bytes: */
+  lwp_ptable[lwp_procs].stack = (unsigned long*)malloc(size*4);
   lwp_ptable[lwp_procs].stacksize = size;
   lwp_ptable[lwp_procs].sp = lwp_ptable[lwp_procs].stack + size;
     
@@ -71,7 +107,6 @@ int new_lwp(lwpfun funct, void *ptr, size_t size)
   lwp_ptable[lwp_procs].sp--;
   *(lwp_ptable[lwp_procs].sp) = (unsigned long)lwp_exit;
 
-      
   /* pointer to func */  
   lwp_ptable[lwp_procs].sp--;
   *(lwp_ptable[lwp_procs].sp) = (unsigned long)funct;
@@ -100,12 +135,15 @@ int new_lwp(lwpfun funct, void *ptr, size_t size)
 
   lwp_procs++;
 
-  return lwp_ptable[lwp_procs-1].pid;
+  return (int)lwp_ptable[lwp_procs-1].pid;
 
 }
 
 /*
- * Terminate current LWP
+ * Terminates the current LWP.
+ *
+ * Frees its resources, and moves all the others up in the process
+ * table.
  */
 void lwp_exit()
 {
@@ -134,6 +172,9 @@ void lwp_exit()
 }
 
 /*
+ * Causes the LWP package to use the function scheduler to choose
+ * the next process to run.
+ */
 void lwp_set_scheduler(schedfun sched) 
 {
   if(sched) {
@@ -144,6 +185,7 @@ void lwp_set_scheduler(schedfun sched)
   
 }
 
+/*
 int roundrobin()
 {
   return (lwp_running + 1) % lwp_procs;
@@ -151,9 +193,9 @@ int roundrobin()
 */
 
 /* 
- * Return PID of calling LWP
+ * Returns the PID of the calling LWP.
  */
-int  lwp_getpid()
+unsigned long lwp_getpid()
 {
   return lwp_ptable[lwp_running].pid;
 }
