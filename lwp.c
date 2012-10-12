@@ -72,8 +72,12 @@ void lwp_yield()
   SAVE_STATE();
   GetSP(lwp_ptable[lwp_running].sp);
     
-  lwp_running = (lwp_running + 1) % lwp_procs;
-  
+  if(scheduler != NULL){
+     lwp_running = scheduler();
+  } else {
+     lwp_running = (lwp_running + 1) % lwp_procs;
+  } 
+
   SetSP(lwp_ptable[lwp_running].sp);
   RESTORE_STATE();  
 }
@@ -84,8 +88,6 @@ int new_lwp(lwpfun funct, void *ptr, size_t size)
   unsigned long *sp;
   int i;
   i = 0;
-
-  printf("lwp_procs = %d\n", lwp_procs);
 
   /* If more than LWP_PROC_LIMIT threads already exist,
    * then do not create a new thread/LWP. */
@@ -151,6 +153,7 @@ void lwp_exit()
   unsigned long *sp;
 
   /* Should get onto a new stack before destroying the current one */
+  SAVE_STATE();
   
   free(lwp_ptable[lwp_running].stack);  
   lwp_procs--;
@@ -175,23 +178,12 @@ void lwp_exit()
  * Causes the LWP package to use the function scheduler to choose
  * the next process to run.
  */
-/*
+
 void lwp_set_scheduler(schedfun sched) 
 {
-  if(sched) {
-    scheduler = sched;
-  } else {
-    scheduler = roundrobin;
-  }
-  
-}*/
-
-/*
-int roundrobin()
-{
-  return (lwp_running + 1) % lwp_procs;
+  scheduler = sched;
 }
-*/
+
 
 /* 
  * Returns the PID of the calling LWP.
