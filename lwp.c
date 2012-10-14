@@ -16,9 +16,6 @@
 
 #include "lwp.h"
 
-void print_table();
-int roundrobin();
-
 /* Global variable to define max number of active LWPs */
 lwp_context lwp_ptable[LWP_PROC_LIMIT];
 
@@ -27,6 +24,9 @@ unsigned long *initial;
 
 /* scheduler function */
 schedfun scheduler;
+
+/* used for lwp_exit to move processes up in lwp_ptable */
+int exit_i = 0;
 
 /*
  * Starts the LWP system.
@@ -68,7 +68,6 @@ void lwp_stop()
  */
 void lwp_yield()
 {
-
   SAVE_STATE();
   GetSP(lwp_ptable[lwp_running].sp);
     
@@ -82,7 +81,10 @@ void lwp_yield()
   RESTORE_STATE();  
 }
 
-
+/* Creates a new LWP.
+ *
+ * Calls the given function with the given argument.
+ */
 int new_lwp(lwpfun funct, void *ptr, size_t size)
 {
   unsigned long *sp;
@@ -124,21 +126,9 @@ int new_lwp(lwpfun funct, void *ptr, size_t size)
   /* set EBP for register restory */
   *(lwp_ptable[lwp_procs].sp) = (unsigned long)sp;
 
-  /* print stack */
-  /*
-  printf("stack top:\t %d\n", (int)(lwp_ptable[lwp_procs].stack + size));  
-  printf("current:\t %d\n", (int)(lwp_ptable[lwp_procs].sp));  
-  for(i = 0; i < 11; i++) {
-    printf("Address: %d\t Value: %d \n", (int)(lwp_ptable[lwp_procs].sp + i), (int)*(lwp_ptable[lwp_procs].sp + i));
-  }  
-  printf("\n");
-  */
-
-
   lwp_procs++;
 
   return (int)lwp_ptable[lwp_procs-1].pid;
-
 }
 
 /*
@@ -149,37 +139,34 @@ int new_lwp(lwpfun funct, void *ptr, size_t size)
  */
 void lwp_exit()
 {
-  int i;  
-  unsigned long *sp;
-
-  /* Should get onto a new stack before destroying the current one */
-  
   free(lwp_ptable[lwp_running].stack);  
   lwp_procs--;
   
-
-  if(lwp_procs == 0) {
+  if(lwp_procs == 0){
     lwp_stop();
     return;
   }
   
   /* Move processes in table down */
-  for (i = lwp_running; i < lwp_procs; i++) {
-    lwp_ptable[i] = lwp_ptable[i+1];
+  for(exit_i = lwp_running; exit_i < lwp_procs; exit_i++){
+    lwp_ptable[exit_i] = lwp_ptable[exit_i+1];
   }
 
   /* Choose new process */
-  sp = lwp_ptable[lwp_running].sp;
-  SetSP(sp);
-  RESTORE_STATE(); /* make last statement */
+  if(scheduler != NULL){
+     lwp_running = scheduler();
+  } else {
+     lwp_running = (lwp_running + 1) % lwp_procs;
+  } 
 
+  SetSP(lwp_ptable[lwp_running].sp);
+  RESTORE_STATE(); 
 }
 
 /*
  * Causes the LWP package to use the function scheduler to choose
  * the next process to run.
  */
-
 void lwp_set_scheduler(schedfun sched) 
 {
   scheduler = sched;
@@ -192,20 +179,4 @@ void lwp_set_scheduler(schedfun sched)
 unsigned long lwp_getpid()
 {
   return lwp_ptable[lwp_running].pid;
-}
-
-
-void print_table() 
-{
-  int i;
-  printf("\n");
-  printf("lwp_procs: %d\n", lwp_procs);
-  for(i = 0; i < lwp_procs; i++) {
-    printf("index: %d\t", i);
-    printf("pid: %d\t", (int)lwp_ptable[i].pid);
-    printf("stack: %d\t", (int)lwp_ptable[i].stack);
-    printf("size: %d\t", (int)lwp_ptable[i].stacksize);
-    printf("sp: %d\n", (int)lwp_ptable[i].sp);
-  }
-
 }

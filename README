@@ -17,7 +17,9 @@ Each of the snake programs installs signal handlers such that
 SIGINT (^C) will kill a snake, and SIGQUIT (^\) will terminate
 threading.
 
+---------------------------------------------------------
 
+Alex Spotnitz (aspotnit)
+Russell Taylor (rtaylor)
 
-(aspotnit)
-(rtaylor)
+Our program uses the default lwp.h header file (no modifications).

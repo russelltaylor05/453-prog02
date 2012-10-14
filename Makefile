@@ -34,14 +34,14 @@ allclean: clean
 clean:	
 	rm -f  *.o $(OBJS) *~ TAGS nums hungry snakes
 
-snakes: snakemain.o libPLN.a libsnakes.a libLWP.a  
-	$(LD) $(LDFLAGS) -o snakes snakemain.o -L. -lncurses -lsnakes -lLWP -lPLN 
+snakes: snakemain.o libPLN.a libsnakes.a liblwp.a  
+	$(LD) $(LDFLAGS) -o snakes snakemain.o -L. -lncurses -lsnakes -llwp -lPLN 
 
-hungry: hungrymain.o libPLN.a libsnakes.a libLWP.a
-	$(LD) $(LDFLAGS) -o hungry hungrymain.o -L. -lncurses -lsnakes -lLWP -lPLN 
+hungry: hungrymain.o libPLN.a libsnakes.a liblwp.a
+	$(LD) $(LDFLAGS) -o hungry hungrymain.o -L. -lncurses -lsnakes -llwp -lPLN 
 
-nums: numbersmain.o libPLN.a libLWP.a
-	$(LD) $(LDFLAGS) -o nums numbersmain.o -L. -lLWP -lPLN
+nums: numbersmain.o libPLN.a liblwp.a
+	$(LD) $(LDFLAGS) -o nums numbersmain.o -L. -llwp -lPLN
 
 hungrymain.o: lwp.h snakes.h
 
@@ -49,8 +49,8 @@ snakemain.o: lwp.h snakes.h
 
 numbermain.o: lwp.h
 
-libLWP.a: lwp.o
-	ar rcs libLWP.a lwp.o
+liblwp.a: lwp.o
+	ar rcs liblwp.a lwp.o
 
 lwp.o: lwp.c
 	$(LD) $(LDFLAGS) -c lwp.c
